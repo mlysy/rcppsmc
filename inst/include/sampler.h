@@ -137,8 +137,6 @@ namespace smc {
         sampler<Space,Params> & operator=(const sampler<Space,Params> & sFrom);
         ///Calculates and Returns the Effective Sample Size.
         double GetESS(void) const;
-        /// Returns the Effective Sample Size of the specified particle generation.
-        double GetESS(long lGeneration) const;
         ///Returns the number of accepted proposals from the most recent MCMC iteration
         int GetAccepted(void) const {return nAccepted;}
         ///Returns a flag for whether the ensemble was resampled during the most recent iteration
@@ -151,6 +149,16 @@ namespace smc {
         long GetNumber(void) const {return N;}
         ///Returns the number of evolution times stored in the history.
         long GetHistoryLength(void) const {return History.size();}
+        ///Returns the current particle set stored in the history.
+        population<Space> GetHistoryPopulation(long n) const {return History[n].GetValues();}
+        ///Returns a reference to the particle set stored in the history.
+        const population<Space> & GetHistoryPopulationRefs(long n) const {return History[n].GetValues();}
+        ///Returns the history flags
+        historyflags GetHistoryFlags(long n) const {return History[n].GetFlags();}
+        /// Returns the Effective Sample Size of the specified particle generation.
+        double GetESS(long n) const {return History[n].GetESS();}
+        ///Returns the history number of MCMC iterations performed during this iteration.
+        int GetHistorymcmcRepeats(long n) {return History[n].mcmcRepeats();}
         ///Returns the additional algorithm parameters.
         const Params & GetAlgParams(void) const {return algParams;}
         ///Return the value of particle n
@@ -247,6 +255,7 @@ namespace smc {
         delete pAdapt;
     }
 
+    // deep-copy, to be used both for copy constructor and assignment overload.
     template <class Space, class Params>
     void sampler<Space, Params>::_copy(const sampler<Space,Params> & sFrom)
     {
@@ -273,10 +282,21 @@ namespace smc {
         Moves = sFrom.Moves;
         /// The additional algorithm parameters.
         algParams = sFrom.algParams;
-        /// An object for adapting additional algorithm parameters
-        pAdapt = sFrom.pAdapt;
-        ///A flag to track whether the adaptation object needs to be included in this destructor.
-        adaptBelong = sFrom.adaptBelong;
+        if(sFrom.adaptBelong) {
+            // this can only happen if the default adaptMethods was used,
+            // i.e., no call to SetAdaptMethods
+            pAdapt = new adaptMethods<Space,Params>;
+            adaptBelong = 1;
+        } else {
+            // this can only happen if SetAdaptMethods was called,
+            // i.e., pAdapt points to an external object which should not be deleted with sampler
+            pAdapt = sFrom.pAdapt;
+            adaptBelong = 0;
+        }
+        // /// An object for adapting additional algorithm parameters
+        // pAdapt = sFrom.pAdapt;
+        // ///A flag to track whether the adaptation object needs to be included in this destructor.
+        // adaptBelong = sFrom.adaptBelong sFrom.adaptBelong;
 
         ///The number of MCMC moves which have been accepted during this iteration
         nAccepted = sFrom.nAccepted;
@@ -314,21 +334,13 @@ namespace smc {
           }
           _copy(sFrom);
         }
+        return *this;
     }
 
     template <class Space, class Params>
     double sampler<Space,Params>::GetESS(void) const
     {
         return expl(2*stableLogSumWeights(pPopulation.GetLogWeight())-stableLogSumWeights(2.0*pPopulation.GetLogWeight()));
-    }
-
-
-    template <class Space, class Params>
-    double  sampler<Space,Params>::GetESS(long lGeneration) const
-    {
-        typename std::vector<historyelement<Space> >::const_iterator it = History.begin();
-        std::advance(it,lGeneration);
-        return it->GetESS();
     }
 
     /// At present this function resets the system evolution time to 0 and calls the moveset initialisor to assign each
@@ -497,7 +509,7 @@ namespace smc {
                     current_expt = it->Integrate(lTime, pIntegrand, pAuxiliary);
                     current_var = it->Integrate_Var(lTime, pIntegrand, current_expt, pAuxiliary);
                     width = static_cast<long double>(pWidth(lTime,pAuxiliary));
-                    rValue += width/2.0 * (previous_expt + current_expt) - pow(width,2.0)/12.0*(current_var - previous_var);
+                    rValue += width/2.0 * (previous_expt + current_expt) - std::pow(width,2.0)/12.0*(current_var - previous_var);
                     lTime++;
                     previous_expt = current_expt;
                     previous_var = current_var;

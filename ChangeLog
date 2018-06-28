@@ -1,7 +1,58 @@
+2018-03-18  Leah F. South  <leah.south@hdr.qut.edu.au>
+
+	* inst/include/moveset.h: Changed the assignment overloader to use
+	a const reference.
+	* inst/include/sampler.h: Added a missing return to the sampler
+	assignment overloading function.
+
+2018-03-18  Adam M. Johansen  <adam.johansen@gmail.com>
+
+	* inst/NEWS.Rd: Duplicate entry removed.
+	* .editorconfig: Added.
+	* .Rbuildignore: .editorconfig added.
+
+2018-03-18  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.2.1
+
+	* inst/NEWS.Rd: Updated
+
+2018-03-17  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/history.h: Use std::pow
+	* inst/include/sampler.h: Idem
+	* src/LinReg.cpp: Idem
+	* src/LinReg_LA_adapt.cpp: Idem
+	* src/nonLinPMMH.cpp: Idem
+	* src/pflineart.cpp: Idem
+	* src/pfnonlinbs.cpp: Idem
+
+	* DESCRIPTION (Version, Date): New minor version
+
+2018-03-16  Adam M. Johansen  <adam.johansen@gmail.com>
+
+	* README.md: Added link to rcppsmc google group.
+
+2018-03-13  Tiberiu Lepadatu  <tiberiulepadatu14@gmail.com>
+
+	* inst/include/sampler.h: Improve the history getters so we can have
+	a more natural interface to work with.
+	* src/LinReg_LA_adapt.cpp: Replace the old methods.
+
+2018-03-03  Adam M. Johansen  <adam.johansen@gmail.com>
+
+	* src/pfnonlinbs.cpp (pfNonlinBS_impl): Bugfix for SD estimation.
+	(nonlinbs): Changed initial variance for consistency with simulator.
+
+2018-01-30  Martin Lysys  <mlysy@uwaterloo.ca>
+
+	* inst/include/sampler.h: Corrected sampler copy ctor/assignment
+
 2018-01-26  Dirk Eddelbuettel  <edd@debian.org>
 
 	* R/plugin.R (inlineCxxPlugin): Plugin support for Rcpp Attributes
 	and inline
+	* inst/inclide/RcppSMC.h: Header for plugin use
 
 2018-01-24  Dirk Eddelbuettel  <edd@debian.org>
 
